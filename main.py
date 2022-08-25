@@ -1,6 +1,8 @@
 from enum import Enum
-from typing import Union
-from fastapi import FastAPI
+from typing import Union, List
+from typing_extensions import Required
+from fastapi import FastAPI, Query
+from pydantic import BaseModel, Required
 
 app = FastAPI()
 fake_items_db = [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]
@@ -10,6 +12,13 @@ class ModelName(str, Enum):
     alexnet = "alexnet"
     resnet = "resnet"
     lenet = "lenet"
+
+
+class Item(BaseModel):
+    name: str
+    description: Union[str, None] = None
+    price: float
+    tax: Union[float, None] = None
 
 
 @app.get("/")
@@ -63,3 +72,35 @@ async def read_user_item(user_id: int, item_id: str, q: Union[str, None] = None,
         item.update({"description": "This is an amazing item that has a long description"})
     
     return item
+
+
+@app.get("/items/")
+async def read_items(
+        q: Union[List[str], None] = Query(
+            default=["foo", "bar"], min_length=2, max_length=50,
+            alias="item-list", deprecated=True, regex="\w+", title="query list",
+            description="provide a list of strings which only contains letters"),
+        visible_query: Union[str, None] = Query(default=Required),
+        hidden_query: Union[str, None] = Query(default=None, include_in_schema=False)):
+    
+    results = {"items": [{"item_id": "Foo"}, {"item_id": "Bar"}]}
+    if q:
+        results.update({"q": q})
+    return results
+
+
+@app.post("/items/")
+async def create_item(item: Item):
+    item_dict = item.dict()
+    if item.tax:
+        price_with_tax = item.price + item.tax
+        item_dict.update({"price_with_tax": price_with_tax})
+    return item_dict
+
+
+@app.put("/items/{item_id}")
+async def update_item(item_id: int, item: Item, q: Union[str, None] = None):
+    result = {"item_id": item_id, **item.dict()}
+    if q:
+        result.update({"q": q})
+    return result
