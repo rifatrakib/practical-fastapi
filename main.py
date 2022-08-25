@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Union, List
 from typing_extensions import Required
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Path
 from pydantic import BaseModel, Required
 
 app = FastAPI()
@@ -74,16 +74,18 @@ async def read_user_item(user_id: int, item_id: str, q: Union[str, None] = None,
     return item
 
 
-@app.get("/items/")
+@app.get("/item/{item_id}")
 async def read_items(
+        item_id: int = Path(title="id of the item to get", gt=1, le=1000),
         q: Union[List[str], None] = Query(
             default=["foo", "bar"], min_length=2, max_length=50,
             alias="item-list", deprecated=True, regex="\w+", title="query list",
             description="provide a list of strings which only contains letters"),
+        size: float = Path(ge=0, lt=1),
         visible_query: Union[str, None] = Query(default=Required),
         hidden_query: Union[str, None] = Query(default=None, include_in_schema=False)):
     
-    results = {"items": [{"item_id": "Foo"}, {"item_id": "Bar"}]}
+    results = {"item_id": item_id, "size": size}
     if q:
         results.update({"q": q})
     return results
