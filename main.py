@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Union, List
 from typing_extensions import Required
 from fastapi import FastAPI, Query, Path, Body
-from pydantic import BaseModel, Required
+from pydantic import BaseModel, Field, Required
 
 app = FastAPI()
 fake_items_db = [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]
@@ -16,8 +16,10 @@ class ModelName(str, Enum):
 
 class Item(BaseModel):
     name: str
-    description: Union[str, None] = None
-    price: float
+    description: Union[str, None] = Field(
+        default=None, title="description for the item", max_length=300,
+    )
+    price: float = Field(gt=0, description="price must be greater than 0")
     tax: Union[float, None] = None
 
 
@@ -118,3 +120,9 @@ async def update_item(
     if item:
         result.update({"item": item})
     return result
+
+
+@app.put("/single-item/{item_id}")
+async def update_single_item(item_id: int, item: Item = Body(embed=True)):
+    results = {"item_id": item_id, "item": item}
+    return results
