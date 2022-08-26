@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Union, List
 from typing_extensions import Required
-from fastapi import FastAPI, Query, Path
+from fastapi import FastAPI, Query, Path, Body
 from pydantic import BaseModel, Required
 
 app = FastAPI()
@@ -19,6 +19,11 @@ class Item(BaseModel):
     description: Union[str, None] = None
     price: float
     tax: Union[float, None] = None
+
+
+class UserModel(BaseModel):
+    username: str
+    full_name: Union[str, None] = None
 
 
 @app.get("/")
@@ -101,8 +106,15 @@ async def create_item(item: Item):
 
 
 @app.put("/items/{item_id}")
-async def update_item(item_id: int, item: Item, q: Union[str, None] = None):
-    result = {"item_id": item_id, **item.dict()}
+async def update_item(
+        *, item_id: int = Path(title="id of the item to query for", ge=0, lt=1000),
+        q: Union[str, None] = None,
+        user: UserModel(embed=True),
+        importance: int = Body(),
+        item: Union[Item, None] = None):
+    result = {"item_id": item_id, "user": user, "importance": importance}
     if q:
         result.update({"q": q})
+    if item:
+        result.update({"item": item})
     return result
