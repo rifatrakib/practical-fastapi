@@ -1,8 +1,8 @@
 from enum import Enum
-from typing import Union, List
+from typing import Union, List, Set, Dict
 from typing_extensions import Required
 from fastapi import FastAPI, Query, Path, Body
-from pydantic import BaseModel, Field, Required
+from pydantic import BaseModel, Field, Required, HttpUrl
 
 app = FastAPI()
 fake_items_db = [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]
@@ -14,6 +14,11 @@ class ModelName(str, Enum):
     lenet = "lenet"
 
 
+class ImageModel(BaseModel):
+    url: HttpUrl
+    name: str
+
+
 class Item(BaseModel):
     name: str
     description: Union[str, None] = Field(
@@ -21,6 +26,15 @@ class Item(BaseModel):
     )
     price: float = Field(gt=0, description="price must be greater than 0")
     tax: Union[float, None] = None
+    tags: Set[str] = set()
+    image: Union[List[ImageModel], None] = None
+
+
+class Offer(BaseModel):
+    name: str
+    description: Union[str, None] = None
+    price: float
+    items: List[Item]
 
 
 class UserModel(BaseModel):
@@ -126,3 +140,13 @@ async def update_item(
 async def update_single_item(item_id: int, item: Item = Body(embed=True)):
     results = {"item_id": item_id, "item": item}
     return results
+
+
+@app.post("/images/multiple/")
+async def create_multiple_images(images: List[ImageModel]):
+    return images
+
+
+@app.post("/index-weights")
+async def create_index_weights(weights: Dict[int, float]):
+    return weights
