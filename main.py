@@ -17,15 +17,17 @@ class ModelName(str, Enum):
 class ImageModel(BaseModel):
     url: HttpUrl
     name: str
+    size: int
 
 
 class Item(BaseModel):
-    name: str
+    name: str = Field(example="foo")
     description: Union[str, None] = Field(
         default=None, title="description for the item", max_length=300,
+        example="description to the item",
     )
-    price: float = Field(gt=0, description="price must be greater than 0")
-    tax: Union[float, None] = None
+    price: float = Field(gt=0, description="price must be greater than 0", example=30)
+    tax: Union[float, None] = Field(example=2.4)
     tags: Set[str] = set()
     image: Union[List[ImageModel], None] = None
 
@@ -143,7 +145,37 @@ async def update_single_item(item_id: int, item: Item = Body(embed=True)):
 
 
 @app.post("/images/multiple/")
-async def create_multiple_images(images: List[ImageModel]):
+async def create_multiple_images(images: List[ImageModel] = Body(
+        examples = {
+                "normal": {
+                    "summary": "a normal example",
+                    "description": "A **normal** item works correctly.",
+                    "value": {
+                        "url": "/images/1.png",
+                        "name": "user_1",
+                        "size": 35,
+                    }
+                },
+                "converted": {
+                    "summary": "example with converted data",
+                    "description": "FastAPI can convert size `strings` to actual `numbers` automatically",
+                    "value": {
+                        "url": "/images/1.png",
+                        "name": "user_1",
+                        "size": "35",
+                    }
+                },
+                "invalid": {
+                    "summary": "invalid data example",
+                    "description": "Invalid data is rejected with an error",
+                    "value": {
+                        "url": "-0945ui609",
+                        "name": "tk34",
+                        "size": "thirty five",
+                    }
+                }
+            }
+        )):
     return images
 
 
