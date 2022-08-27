@@ -3,7 +3,7 @@ from uuid import UUID
 from typing_extensions import Required
 from typing import Union, List, Set, Dict
 from datetime import datetime, time, timedelta
-from fastapi import FastAPI, Query, Path, Body
+from fastapi import FastAPI, Query, Path, Body, Cookie
 from pydantic import BaseModel, Field, Required, HttpUrl
 
 app = FastAPI()
@@ -205,3 +205,8 @@ def read_single_item(
         "start_process": start_process,
         "duration": duration,
     }
+
+
+@app.get("/cookie-item")
+async def read_cookie_item(ads_id: Union[str, None] = Cookie(default=None)):
+    return {"ads_id": ads_id}
