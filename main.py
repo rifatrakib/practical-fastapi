@@ -3,8 +3,8 @@ from uuid import UUID
 from typing_extensions import Required
 from typing import Union, List, Set, Dict
 from datetime import datetime, time, timedelta
-from fastapi import FastAPI, Query, Path, Body, Cookie
 from pydantic import BaseModel, Field, Required, HttpUrl
+from fastapi import FastAPI, Query, Path, Body, Cookie, Header
 
 app = FastAPI()
 fake_items_db = [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]
@@ -51,7 +51,7 @@ async def root():
     return {"message": "Application initialized"}
 
 
-@app.get("/items/{item_id}")
+@app.get("/items/{item_id}/")
 async def read_item(item_id: str, q: Union[str, None] = None, short: bool = False):
     item = {"item_id": item_id}
     if q:
@@ -61,17 +61,17 @@ async def read_item(item_id: str, q: Union[str, None] = None, short: bool = Fals
     return item
 
 
-@app.get("/users/me")
+@app.get("/users/me/")
 async def read_user_me():
     return {"user_id": "the current user"}
 
 
-@app.get("/users/{user_id}")
+@app.get("/users/{user_id}/")
 async def read_user(user_id: int):
     return {"user_id": user_id}
 
 
-@app.get("/model/{model_name}")
+@app.get("/model/{model_name}/")
 async def get_model(model_name: ModelName):
     if model_name == ModelName.alexnet:
         return {"model_name": model_name, "message": "Deep Learning FTW!"}
@@ -82,12 +82,12 @@ async def get_model(model_name: ModelName):
     return {"model_name": model_name, "message": "Have some residuals"}
 
 
-@app.get("/files/{file_path:path}")
+@app.get("/files/{file_path:path}/")
 async def read_file(file_path: str):
     return {"file_path": file_path}
 
 
-@app.get("/users/{user_id}/items/{item_id}")
+@app.get("/users/{user_id}/items/{item_id}/")
 async def read_user_item(user_id: int, item_id: str, q: Union[str, None] = None, short: bool = False):
     item = {"item_id": item_id, "owner_id": user_id}
     if q:
@@ -99,7 +99,7 @@ async def read_user_item(user_id: int, item_id: str, q: Union[str, None] = None,
     return item
 
 
-@app.get("/item/{item_id}")
+@app.get("/item/{item_id}/")
 async def read_items(
         item_id: int = Path(title="id of the item to get", gt=1, le=1000),
         q: Union[List[str], None] = Query(
@@ -125,7 +125,7 @@ async def create_item(item: Item):
     return item_dict
 
 
-@app.put("/items/{item_id}")
+@app.put("/items/{item_id}/")
 async def update_item(
         *, item_id: int = Path(title="id of the item to query for", ge=0, lt=1000),
         q: Union[str, None] = None,
@@ -140,7 +140,7 @@ async def update_item(
     return result
 
 
-@app.put("/single-item/{item_id}")
+@app.put("/single-item/{item_id}/")
 async def update_single_item(item_id: int, item: Item = Body(embed=True)):
     results = {"item_id": item_id, "item": item}
     return results
@@ -181,12 +181,12 @@ async def create_multiple_images(images: List[ImageModel] = Body(
     return images
 
 
-@app.post("/index-weights")
+@app.post("/index-weights/")
 async def create_index_weights(weights: Dict[int, float]):
     return weights
 
 
-@app.get("read-item/{item_id}")
+@app.get("read-item/{item_id}/")
 def read_single_item(
             item_id: UUID,
             start_datetime: Union[datetime, None] = Body(default=None),
@@ -207,6 +207,23 @@ def read_single_item(
     }
 
 
-@app.get("/cookie-item")
+@app.get("/cookie-item/")
 async def read_cookie_item(ads_id: Union[str, None] = Cookie(default=None)):
     return {"ads_id": ads_id}
+
+
+@app.get("/header-item/")
+async def read_header_item(user_agent: Union[str, None] = Header(default=None)):
+    return {"User-Agent": user_agent}
+
+
+@app.get("/strange-header/")
+async def read_strange_header(
+            strange_header: Union[str, None] = Header(default=None, convert_underscores=False),
+        ):
+    return {"strange_header": strange_header}
+
+
+@app.get("/duplicate-headers/")
+async def read_duplicate_headers(x_token: Union[List[str], None] = Header(default=None)):
+    return {"X-Token values": x_token}
