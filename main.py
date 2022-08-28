@@ -4,7 +4,7 @@ from typing_extensions import Required
 from typing import Union, List, Set, Dict
 from datetime import datetime, time, timedelta
 from pydantic import BaseModel, Field, Required, HttpUrl, EmailStr
-from fastapi import FastAPI, Query, Path, Body, Cookie, Header
+from fastapi import FastAPI, Query, Path, Body, Cookie, Header, Form
 
 app = FastAPI()
 fake_items_db = [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]
@@ -245,3 +245,8 @@ async def read_duplicate_headers(x_token: Union[List[str], None] = Header(defaul
 @app.post("/create-user/", response_model=UserOut, response_model_exclude_unset=True)
 async def create_user(user: UserIn):
     return user
+
+
+@app.post("/login/")
+async def login(username: str = Form(), password: str = Form()):
+    return {"username": username}
