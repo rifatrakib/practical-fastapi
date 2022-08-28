@@ -3,7 +3,7 @@ from uuid import UUID
 from typing_extensions import Required
 from typing import Union, List, Set, Dict
 from datetime import datetime, time, timedelta
-from pydantic import BaseModel, Field, Required, HttpUrl
+from pydantic import BaseModel, Field, Required, HttpUrl, EmailStr
 from fastapi import FastAPI, Query, Path, Body, Cookie, Header
 
 app = FastAPI()
@@ -43,6 +43,19 @@ class Offer(BaseModel):
 
 class UserModel(BaseModel):
     username: str
+    full_name: Union[str, None] = None
+
+
+class UserIn(BaseModel):
+    username: str
+    password: str
+    email: EmailStr
+    full_name: Union[str, None] = None
+
+
+class UserOut(BaseModel):
+    username: str
+    email: EmailStr
     full_name: Union[str, None] = None
 
 
@@ -146,7 +159,7 @@ async def update_single_item(item_id: int, item: Item = Body(embed=True)):
     return results
 
 
-@app.post("/images/multiple/")
+@app.post("/images/multiple/", response_model=List[ImageModel])
 async def create_multiple_images(images: List[ImageModel] = Body(
         examples = {
                 "normal": {
@@ -227,3 +240,8 @@ async def read_strange_header(
 @app.get("/duplicate-headers/")
 async def read_duplicate_headers(x_token: Union[List[str], None] = Header(default=None)):
     return {"X-Token values": x_token}
+
+
+@app.post("/create-user/", response_model=UserOut, response_model_exclude_unset=True)
+async def create_user(user: UserIn):
+    return user
