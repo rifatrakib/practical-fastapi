@@ -50,3 +50,9 @@ async def update_multiple_body_item(
     if q:
         results.update({"q": q})
     return results
+
+
+@app.put("/embeded-items/{item_id}")
+async def update_embed_item(item_id: int, item: Item = Body(embed=True)):
+    results = {"item_id": item_id, "item": item}
+    return results
