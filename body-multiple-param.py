@@ -12,6 +12,11 @@ class Item(BaseModel):
     tax: Union[float, None] = None
 
 
+class User(BaseModel):
+    username: str
+    full_name: Union[str, None] = None
+
+
 @app.put("/items/{item_id}")
 async def update_item(
     *,
@@ -24,4 +29,10 @@ async def update_item(
         results.update({"q": q})
     if item:
         results.update({"item": item})
+    return results
+
+
+@app.put("/multiple-body-items/{item_id}")
+async def update_multiple_body_item(item_id: int, item: Item, user: User):
+    results = {"item_id": item_id, "item": item, "user": user}
     return results
