@@ -3,6 +3,10 @@ from fastapi import FastAPI
 from pydantic import BaseModel, EmailStr
 
 app = FastAPI()
+root_items = [
+    {"name": "Foo", "description": "There comes my hero"},
+    {"name": "Red", "description": "It's my aeroplane"},
+]
 items = {
     "item1": {"description": "All my friends drive a low rider", "type": "car"},
     "item2": {
@@ -11,6 +15,11 @@ items = {
         "size": 5,
     },
 }
+
+
+class Item(BaseModel):
+    name: str
+    description: str
 
 
 class BaseItem(BaseModel):
@@ -65,3 +74,13 @@ async def create_user(user_in: UserIn):
 @app.get("/items/{item_id}", response_model=Union[PlaneItem, CarItem])
 async def read_item(item_id: str):
     return items[item_id]
+
+
+@app.get("/items/", response_model=List[Item])
+async def read_items():
+    return root_items
+
+
+@app.get("/keyword-weights/", response_model=Dict[str, float])
+async def read_keyword_weights():
+    return {"foo": 2.3, "bar": 3.4}
