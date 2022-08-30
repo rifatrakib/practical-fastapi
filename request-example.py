@@ -1,5 +1,5 @@
 from typing import Union
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
 from pydantic import BaseModel, Field
 
 app = FastAPI()
@@ -29,6 +29,13 @@ class InlineItem(BaseModel):
     tax: Union[float, None] = Field(default=None, example=3.2)
 
 
+class BodyItem(BaseModel):
+    name: str
+    description: Union[str, None] = None
+    price: float
+    tax: Union[float, None] = None
+
+
 @app.put("/items/{item_id}")
 async def update_item(item_id: int, item: Item):
     results = {"item_id": item_id, "item": item}
@@ -36,6 +43,22 @@ async def update_item(item_id: int, item: Item):
 
 
 @app.put("/inline-items/{item_id}")
-async def update_item(item_id: int, item: InlineItem):
+async def update_item_inline(item_id: int, item: InlineItem):
+    results = {"item_id": item_id, "item": item}
+    return results
+
+
+@app.put("/body-items/{item_id}")
+async def update_item_body(
+    item_id: int,
+    item: BodyItem = Body(
+        example={
+            "name": "Foo",
+            "description": "A very nice Item",
+            "price": 35.4,
+            "tax": 3.2,
+        },
+    ),
+):
     results = {"item_id": item_id, "item": item}
     return results
