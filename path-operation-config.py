@@ -1,7 +1,7 @@
 from enum import Enum
-from typing import Set, Union
+from fastapi import FastAPI
 from pydantic import BaseModel
-from fastapi import FastAPI, status
+from typing import Set, Union, List
 
 app = FastAPI()
 
@@ -21,10 +21,22 @@ class Item(BaseModel):
 
 @app.post("/items/", response_model=Item, tags=[Tags.items])
 async def create_item(item: Item):
+    """Create an item with all the information:
+    
+    - **name**: each item must have a name
+    - **description**: a long description
+    - **price**: required
+    - **tax**: if the item doesn't have tax, you can omit this
+    - **tags**: a set of unique tag strings for this item
+    """
     return item
 
 
-@app.get("/items/", tags=[Tags.items])
+@app.get(
+    "/items/", tags=[Tags.items], response_model=List[Item],
+    summary="Read a list of items",
+    description="Read a list of items with all the information, name, description, price, tax and a set of unique tags"
+)
 async def read_items():
     return [{"name": "Foo", "price": 42}]
 
