@@ -1,8 +1,14 @@
+from enum import Enum
 from typing import Set, Union
 from pydantic import BaseModel
 from fastapi import FastAPI, status
 
 app = FastAPI()
+
+
+class Tags(Enum):
+    items = "items"
+    users = "users"
 
 
 class Item(BaseModel):
@@ -13,16 +19,16 @@ class Item(BaseModel):
     tags: Set[str] = set()
 
 
-@app.post("/items/", response_model=Item, tags=["items"])
+@app.post("/items/", response_model=Item, tags=[Tags.items])
 async def create_item(item: Item):
     return item
 
 
-@app.get("/items/", tags=["items"])
+@app.get("/items/", tags=[Tags.items])
 async def read_items():
     return [{"name": "Foo", "price": 42}]
 
 
-@app.get("/users/", tags=["users"])
+@app.get("/users/", tags=[Tags.users])
 async def read_users():
     return [{"username": "johndoe"}]
