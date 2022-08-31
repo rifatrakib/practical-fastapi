@@ -1,4 +1,5 @@
-from typing import Union
+from typing import Union, List
+from fastapi.responses import HTMLResponse
 from fastapi import FastAPI, File, UploadFile
 
 app = FastAPI()
@@ -6,22 +7,39 @@ app = FastAPI()
 
 @app.post("/files/")
 async def create_file(
-    file: Union[bytes, None] = File(default=None, description="A file read as bytes")
+    files: Union[List[bytes], None] = File(default=None, description="A file read as bytes")
 ):
-    if not file:
+    if not files:
         return {"message": "No file sent"}
     else:
-        return {"file_size": len(file)}
+        return {"file_sizes": [len(file) for file in files]}
 
 
 @app.post("/upload-file")
 async def create_upload_file(
-    file: Union[UploadFile, None] = File(
+    files: Union[List[UploadFile], None] = File(
         default=None,
         description="A file read as UploadFile"
     )
 ):
-    if not file:
+    if not files:
         return {"message": "No upload file sent"}
     else:
-        return {"filename": file.filename}
+        return {"filenames": [file.filename for file in files]}
+
+
+@app.get("/")
+async def main():
+    content = """
+    <body>
+    <form action="/files/" enctype="multipart/form-data" method="post">
+    <input name="files" type="file" multiple>
+    <input type="submit">
+    </form>
+    <form action="/uploadfiles/" enctype="multipart/form-data" method="post">
+    <input name="files" type="file" multiple>
+    <input type="submit">
+    </form>
+    </body>
+    """
+    return HTMLResponse(content)
