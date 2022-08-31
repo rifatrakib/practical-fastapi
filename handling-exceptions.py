@@ -1,9 +1,9 @@
 from pydantic import BaseModel
-from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.exceptions import RequestValidationError
-from fastapi import FastAPI, Request, HTTPException, status
-from fastapi.responses import JSONResponse, PlainTextResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi.exception_handlers import http_exception_handler, request_validation_exception_handler
 
 app = FastAPI()
 items = {"foo": "The Foo Wrestlers"}
@@ -28,16 +28,15 @@ async def unicorn_exception_handler(request: Request, exc: UnicornException):
 
 
 @app.exception_handler(StarletteHTTPException)
-async def http_exception_handler(request: Request, exc: StarletteHTTPException):
-    return PlainTextResponse(str(exc.detail), status_code=exc.status_code)
+async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
+    print(f"An HTTP error!: {repr(exc)}")
+    return await http_exception_handler(request, exc)
 
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content=jsonable_encoder({"detail": exc.errors(), "body": exc.body})
-    )
+    print(f"The client sent invalid data!: {exc}")
+    return await request_validation_exception_handler(request, exc)
 
 
 @app.post("/items/")
