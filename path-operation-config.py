@@ -9,6 +9,7 @@ app = FastAPI()
 class Tags(Enum):
     items = "items"
     users = "users"
+    elements = "elements"
 
 
 class Item(BaseModel):
@@ -19,7 +20,11 @@ class Item(BaseModel):
     tags: Set[str] = set()
 
 
-@app.post("/items/", response_model=Item, tags=[Tags.items])
+@app.post(
+    "/items/", response_model=Item, tags=[Tags.items],
+    summary="Create an item",
+    response_description="The created item",
+)
 async def create_item(item: Item):
     """Create an item with all the information:
     
@@ -44,3 +49,8 @@ async def read_items():
 @app.get("/users/", tags=[Tags.users])
 async def read_users():
     return [{"username": "johndoe"}]
+
+
+@app.get("/elements/", tags=[Tags.elements], deprecated=True)
+async def read_elements():
+    return [{"item_id": "Foo"}]
