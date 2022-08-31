@@ -1,10 +1,17 @@
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import JSONResponse, PlainTextResponse
+from pydantic import BaseModel
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
+from fastapi import FastAPI, Request, HTTPException, status
+from fastapi.responses import JSONResponse, PlainTextResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 app = FastAPI()
 items = {"foo": "The Foo Wrestlers"}
+
+
+class Item(BaseModel):
+    title: str
+    size: int
 
 
 class UnicornException(Exception):
@@ -21,13 +28,21 @@ async def unicorn_exception_handler(request: Request, exc: UnicornException):
 
 
 @app.exception_handler(StarletteHTTPException)
-async def http_exception_handler(request, exc):
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     return PlainTextResponse(str(exc.detail), status_code=exc.status_code)
 
 
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request, exc):
-    return PlainTextResponse(str(exc), status_code=400)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content=jsonable_encoder({"detail": exc.errors(), "body": exc.body})
+    )
+
+
+@app.post("/items/")
+async def create_item(item: Item):
+    return item
 
 
 @app.get("/items/{item_id}")
