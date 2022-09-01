@@ -13,7 +13,7 @@ class CommonQueryParameters:
 
 
 @app.get("/items/")
-async def read_items(commons: CommonQueryParameters = Depends(CommonQueryParameters)):
+async def read_items(commons: CommonQueryParameters = Depends()):
     response = {}
     if commons.q:
         response.update({"q": commons.q})
