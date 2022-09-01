@@ -18,5 +18,5 @@ def query_or_cookie_extractor(
 
 
 @app.get("/items/")
-async def read_query(query_or_default: str = Depends(query_or_cookie_extractor)):
+async def read_query(query_or_default: str = Depends(query_or_cookie_extractor, use_cache=False)):
     return {"q_or_cookie": query_or_default}
