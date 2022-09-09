@@ -9,6 +9,11 @@ async def read_items():
     return [{"item_id": "Foo"}]
 
 
+@app.get("/all-items/", include_in_schema=False)
+async def read_all_items():
+    return [{"item_id": "Foo"}]
+
+
 def route_names_as_operation_id(app: FastAPI) -> None:
     """
     Simplify operation IDs so that generated API clients have simpler function names.
