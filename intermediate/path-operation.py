@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.routing import APIRoute
 from typing import Set, Union
 from pydantic import BaseModel
@@ -14,8 +14,42 @@ class Item(BaseModel):
     tags: Set[str] = set()
 
 
-@app.post("/items/", response_model=Item, summary="Create an item")
-async def create_item(item: Item):
+def custom_data_reader(raw_body: bytes):
+    return {
+        "size": len(raw_body),
+        "content": {
+            "name": "custom",
+            "price": 42,
+            "description": "a custom description",
+        }
+    }
+
+
+@app.post("/items/", )
+@app.post(
+    "/items/",
+    response_model=Item,
+    summary="Create an item",
+    openapi_extra={
+        "requestBody": {
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "required": ["name", "price"],
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string"},
+                            "price": {"type": "number"},
+                            "description": {"type": "string"},
+                        },
+                    }
+                }
+            },
+            "required": True,
+        },
+    },
+)
+async def create_item(item: Item, request: Request):
     """Create an item with all the information:
     
     - **name**: each item must have a name
@@ -26,7 +60,9 @@ async def create_item(item: Item):
     \f
     :param item: user input
     """
-    return item
+    raw_body = await request.body()
+    data = custom_data_reader(raw_body)
+    return data
 
 
 @app.get(
