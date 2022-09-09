@@ -1,7 +1,8 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.routing import APIRoute
-from typing import Set, Union
-from pydantic import BaseModel
+from typing import Set, Union, List
+from pydantic import BaseModel, ValidationError
+import yaml
 
 app = FastAPI()
 
@@ -63,6 +64,31 @@ async def create_item(item: Item, request: Request):
     raw_body = await request.body()
     data = custom_data_reader(raw_body)
     return data
+
+
+@app.post(
+    "/items-yaml/",
+    openapi_extra={
+        "requestBody": {
+            "content": {"application/x-yaml": {"schema": Item.schema()}},
+            "required": True,
+        },
+    },
+)
+async def create_yaml_item(request: Request):
+    raw_body = request.body()
+    
+    try:
+        data = yaml.safe_load(raw_body)
+    except yaml.YAMLError:
+        raise HTTPException(status_code=422, detail="Invalid YAML")
+    
+    try:
+        item = Item.parse_obj(data)
+    except ValidationError as e:
+        raise HTTPException(status_code=422, detail=e.errors())
+    
+    return item
 
 
 @app.get(
