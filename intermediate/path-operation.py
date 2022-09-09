@@ -29,7 +29,10 @@ async def create_item(item: Item):
     return item
 
 
-@app.get("/items/", operation_id="unique_items_operation_id")
+@app.get(
+    "/items/", operation_id="unique_items_operation_id",
+    openapi_extra={"x-aperture-labs-portal": "blue"},
+)
 async def read_items():
     return [{"item_id": "Foo"}]
 
