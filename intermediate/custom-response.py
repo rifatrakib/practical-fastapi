@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Union
 from fastapi import FastAPI, Response
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse, ORJSONResponse
+from fastapi.responses import JSONResponse, ORJSONResponse, HTMLResponse
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -39,3 +39,17 @@ def get_legacy_data():
 @app.get("/items/", response_class=ORJSONResponse)
 async def read_items():
     return ORJSONResponse([{"item_id": "Foo"}])
+
+
+@app.get("/html-items/", response_class=HTMLResponse)
+async def read_html_items():
+    return """
+    <html>
+        <head>
+            <title>Some HTML in here</title>
+        </head>
+        <body>
+            <h1>Look ma! HTML!</h1>
+        </body>
+    </html>
+    """
