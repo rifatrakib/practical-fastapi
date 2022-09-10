@@ -4,7 +4,7 @@ from fastapi import FastAPI, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import (
     JSONResponse, ORJSONResponse, HTMLResponse, PlainTextResponse, UJSONResponse,
-    RedirectResponse, StreamingResponse
+    RedirectResponse, StreamingResponse, FileResponse
 )
 from pydantic import BaseModel
 
@@ -106,3 +106,13 @@ def stream_large_file():
             yield from file_like
     
     return StreamingResponse(iterfile(), media_type="video/mp4")
+
+
+@app.get("/stream-file/")
+async def stream_file():
+    return FileResponse(some_file_path)
+
+
+@app.get("/alt-stream-file/", response_class=FileResponse)
+async def alt_stream_file():
+    return some_file_path
