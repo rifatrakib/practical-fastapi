@@ -41,9 +41,9 @@ async def read_items():
     return ORJSONResponse([{"item_id": "Foo"}])
 
 
-@app.get("/html-items/", response_class=HTMLResponse)
+@app.get("/html-items/")
 async def read_html_items():
-    return """
+    html_content = """
     <html>
         <head>
             <title>Some HTML in here</title>
@@ -53,3 +53,4 @@ async def read_html_items():
         </body>
     </html>
     """
+    return HTMLResponse(content=html_content, status_code=200)
