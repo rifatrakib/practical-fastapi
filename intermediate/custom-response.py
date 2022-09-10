@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Union
 from fastapi import FastAPI, Response
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, ORJSONResponse
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -34,3 +34,8 @@ def get_legacy_data():
     </shampoo>
     """
     return Response(content=data, media_type="application/xml")
+
+
+@app.get("/items/", response_class=ORJSONResponse)
+async def read_items():
+    return ORJSONResponse([{"item_id": "Foo"}])
