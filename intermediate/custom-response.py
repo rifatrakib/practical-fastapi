@@ -3,7 +3,8 @@ from typing import Union
 from fastapi import FastAPI, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import (
-    JSONResponse, ORJSONResponse, HTMLResponse, PlainTextResponse, UJSONResponse
+    JSONResponse, ORJSONResponse, HTMLResponse, PlainTextResponse, UJSONResponse,
+    RedirectResponse
 )
 from pydantic import BaseModel
 
@@ -70,3 +71,18 @@ async def text_response():
 @app.get("/ujson-items/", response_class=UJSONResponse)
 async def ujson_items():
     return [{"item_id": "Foo"}]
+
+
+@app.get("/typer/")
+async def find_typer():
+    return RedirectResponse("https://typer.tiangolo.com")
+
+
+@app.get("/typer-alt/", response_class=RedirectResponse)
+async def alt_find_typer():
+    return "https://typer.tiangolo.com"
+
+
+@app.get("/redirect-pydantic/", response_class=RedirectResponse, status_code=302)
+async def redirect_pydantic():
+    return "https://pydantic-docs.helpmanual.io/"
