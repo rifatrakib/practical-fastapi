@@ -9,7 +9,7 @@ from fastapi.responses import (
 )
 from pydantic import BaseModel
 
-app = FastAPI()
+app = FastAPI(default_response_class=ORJSONResponse)
 some_file_path = "large-video-file.mp4"
 
 
