@@ -14,6 +14,20 @@ class Item(BaseModel):
     description: Union[str, None] = None
 
 
+def generate_html_response():
+    html_content = """
+    <html>
+        <head>
+            <title>Some HTML in here</title>
+        </head>
+        <body>
+            <h1>Look ma! HTML!</h1>
+        </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content, status_code=200)
+
+
 @app.put("/items/{id}")
 def update_item(id: str, item: Item):
     json_compatible_item_data = jsonable_encoder(item)
@@ -41,16 +55,6 @@ async def read_items():
     return ORJSONResponse([{"item_id": "Foo"}])
 
 
-@app.get("/html-items/")
+@app.get("/html-items/", response_class=HTMLResponse)
 async def read_html_items():
-    html_content = """
-    <html>
-        <head>
-            <title>Some HTML in here</title>
-        </head>
-        <body>
-            <h1>Look ma! HTML!</h1>
-        </body>
-    </html>
-    """
-    return HTMLResponse(content=html_content, status_code=200)
+    return generate_html_response()
