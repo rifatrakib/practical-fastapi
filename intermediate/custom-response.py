@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Union
 from fastapi import FastAPI, Response
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse, ORJSONResponse, HTMLResponse
+from fastapi.responses import JSONResponse, ORJSONResponse, HTMLResponse, PlainTextResponse
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -58,3 +58,8 @@ async def read_items():
 @app.get("/html-items/", response_class=HTMLResponse)
 async def read_html_items():
     return generate_html_response()
+
+
+@app.get("/text/", response_class=PlainTextResponse)
+async def text_response():
+    return "hello fasty"
