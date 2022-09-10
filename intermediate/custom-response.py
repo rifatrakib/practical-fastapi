@@ -9,6 +9,7 @@ from fastapi.responses import (
 from pydantic import BaseModel
 
 app = FastAPI()
+some_file_path = "large-video-file.mp4"
 
 
 class Item(BaseModel):
@@ -96,3 +97,12 @@ async def redirect_pydantic():
 @app.get("/stream-data/")
 async def fake_stream():
     return StreamingResponse(fake_video_streamer())
+
+
+@app.get("/stream-large-file/")
+def stream_large_file():
+    def iterfile():
+        with open(some_file_path, mode="rb") as file_like:
+            yield from file_like
+    
+    return StreamingResponse(iterfile(), media_type="video/mp4")
