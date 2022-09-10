@@ -4,7 +4,7 @@ from fastapi import FastAPI, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import (
     JSONResponse, ORJSONResponse, HTMLResponse, PlainTextResponse, UJSONResponse,
-    RedirectResponse
+    RedirectResponse, StreamingResponse
 )
 from pydantic import BaseModel
 
@@ -29,6 +29,11 @@ def generate_html_response():
     </html>
     """
     return HTMLResponse(content=html_content, status_code=200)
+
+
+async def fake_video_streamer():
+    for i in range(10):
+        yield b"some fake video bytes"
 
 
 @app.put("/items/{id}")
@@ -86,3 +91,8 @@ async def alt_find_typer():
 @app.get("/redirect-pydantic/", response_class=RedirectResponse, status_code=302)
 async def redirect_pydantic():
     return "https://pydantic-docs.helpmanual.io/"
+
+
+@app.get("/stream-data/")
+async def fake_stream():
+    return StreamingResponse(fake_video_streamer())
