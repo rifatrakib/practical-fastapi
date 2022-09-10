@@ -1,5 +1,6 @@
+import orjson
 from datetime import datetime
-from typing import Union
+from typing import Union, Any
 from fastapi import FastAPI, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import (
@@ -10,6 +11,14 @@ from pydantic import BaseModel
 
 app = FastAPI()
 some_file_path = "large-video-file.mp4"
+
+
+class CustomORJSONResponse(Response):
+    media_type = "application/json"
+    
+    def render(self, content: Any):
+        assert orjson is not None, "orjson must be installed"
+        return orjson.dumps(content, option=orjson.OPT_INDENT_2)
 
 
 class Item(BaseModel):
@@ -116,3 +125,8 @@ async def stream_file():
 @app.get("/alt-stream-file/", response_class=FileResponse)
 async def alt_stream_file():
     return some_file_path
+
+
+@app.get("/custom-class-response", response_class=CustomORJSONResponse)
+async def custom_class_response():
+    return {"message": "Hello World"}
