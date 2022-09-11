@@ -1,10 +1,30 @@
-from fastapi import FastAPI, Depends
+import secrets
+from fastapi import FastAPI, HTTPException, status, Depends
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 app = FastAPI()
 security = HTTPBasic()
 
 
+def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
+    current_username_bytes = credentials.username.encode("utf8")
+    current_password_bytes = credentials.password.encode("utf8")
+    correct_username = b"stanleyjobson"
+    correct_password = b"swordfish"
+    
+    is_correct_username = secrets.compare_digest(current_username_bytes, correct_username)
+    is_correct_password = secrets.compare_digest(current_password_bytes, correct_password)
+    
+    if not is_correct_username and is_correct_password:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    
+    return credentials.username
+
+
 @app.get("/users/me/")
-def read_current_user(credentials: HTTPBasicCredentials = Depends(security)):
-    return {"username": credentials.username, "password": credentials.password}
+def read_current_user(username: str = Depends(get_current_username)):
+    return {"username": username}
