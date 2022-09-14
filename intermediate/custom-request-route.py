@@ -1,7 +1,8 @@
 import gzip
 from typing import Callable, List
-from fastapi import FastAPI, Body, Request, Response
+from fastapi import FastAPI, Body, Request, Response, HTTPException
 from fastapi.routing import APIRoute
+from fastapi.exceptions import RequestValidationError
 
 
 class GzipRequest(Request):
@@ -20,7 +21,12 @@ class GzipRoute(APIRoute):
         
         async def custom_route_handler(request: Request) -> Response:
             request = GzipRequest(request.scope, request.receive)
-            return await original_route_handler(request)
+            try:
+                return await original_route_handler(request)
+            except RequestValidationError as exc:
+                body = await request.body()
+                detail = {"errors": exc.errors(), "body": body.decode()}
+                raise HTTPException(status_code=422, detail=detail)
         
         return custom_route_handler
 
