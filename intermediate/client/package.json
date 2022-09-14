@@ -1,0 +1,15 @@
+{
+  "name": "frontend-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "generate-client": "openapi --input ./openapi.json --output ./src/client --client axios"
+  },
+  "author": "",
+  "license": "",
+  "devDependencies": {
+    "openapi-typescript-codegen": "^0.20.1",
+    "typescript": "^4.6.2"
+  }
+}
