@@ -1,6 +1,7 @@
+import time
 import gzip
 from typing import Callable, List
-from fastapi import FastAPI, Body, Request, Response, HTTPException
+from fastapi import FastAPI, Request, Response, HTTPException, Body
 from fastapi.routing import APIRoute
 from fastapi.exceptions import RequestValidationError
 
@@ -15,14 +16,18 @@ class GzipRequest(Request):
         return self._body
 
 
-class GzipRoute(APIRoute):
+class CustomRoute(APIRoute):
     def get_route_handler(self) -> Callable:
         original_route_handler = super().get_route_handler()
         
         async def custom_route_handler(request: Request) -> Response:
             request = GzipRequest(request.scope, request.receive)
             try:
-                return await original_route_handler(request)
+                before = time.time()
+                response: Response = await original_route_handler(request)
+                duration = time.time() - before
+                response.headers["X-Response-Time"] = str(duration)
+                return response
             except RequestValidationError as exc:
                 body = await request.body()
                 detail = {"errors": exc.errors(), "body": body.decode()}
@@ -32,7 +37,7 @@ class GzipRoute(APIRoute):
 
 
 app = FastAPI()
-app.router.route_class = GzipRoute
+app.router.route_class = CustomRoute
 
 
 @app.post("/sum/")
